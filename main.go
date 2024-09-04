@@ -3,15 +3,22 @@ package main
 import (
 	"booking-app/common"
 	"fmt"
-	"strings"
+	"time"
 )
 
-var bookings = []string{}
+var bookings = make([]UserData, 0)
 var conferenceName = "Go Conference"
 
 const conferenceTickets = 50
 
 var remainingTickets uint = 50
+
+type UserData struct {
+	firstName       string
+	lastName        string
+	email           string
+	numberofTickets uint
+}
 
 func main() {
 
@@ -28,6 +35,9 @@ func main() {
 		if isValidName && isValidEmail && isValidTicketNumber {
 
 			bookTicket(userTicket, firstName, lastName, email)
+
+			// send ticket
+			go sendTicket(userTicket, firstName, lastName, email)
 
 			// call function to get first names
 			firstNames := getFirstNames()
@@ -73,8 +83,7 @@ func getFirstNames() []string {
 	firstNames := []string{}
 	for _, booking := range bookings {
 
-		var names = strings.Fields(booking)
-		firstNames = append(firstNames, names[0])
+		firstNames = append(firstNames, booking.firstName)
 	}
 	return firstNames
 
@@ -106,10 +115,28 @@ func getUserInput() (string, string, string, uint) {
 func bookTicket(userTicket uint, firstName string, lastName string, email string) {
 
 	remainingTickets = remainingTickets - userTicket
+
+	// create a map for user
+
+	var userData = UserData{
+		firstName:       firstName,
+		lastName:        lastName,
+		email:           email,
+		numberofTickets: userTicket,
+	}
+
 	// book ticket
-	bookings = append(bookings, firstName+" "+lastName)
+	bookings = append(bookings, userData)
 
 	fmt.Printf("Thank you %v %v for booking %v tickets. You will receive a confirmation email at %v\n", firstName, lastName, userTicket, email)
 	fmt.Printf("We have a total of %v tickets and %v are still available.\n", conferenceTickets, remainingTickets)
 
+}
+func sendTicket(userTicket uint, firstName string, lastName string, email string) {
+	time.Sleep(10 * time.Second)
+	var ticket = fmt.Sprintf("%v tikets for %v %v ", userTicket, firstName, lastName)
+
+	fmt.Println("##################")
+	fmt.Printf("sending ticket:\n %v to email address %v \n", ticket, email)
+	fmt.Println("##################")
 }
